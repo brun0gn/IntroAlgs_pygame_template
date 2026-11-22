@@ -8,7 +8,7 @@ Este repositório é um template para os grupos da disciplina. A proposta é com
 
 - Joaquim de Assis Santana
 - Bruno Gonçalves Belo 
-- Nome do integrante 3
+- Heitor Leonardo Leal
 - Nome do integrante 4
 
 ## Estrutura do projeto
