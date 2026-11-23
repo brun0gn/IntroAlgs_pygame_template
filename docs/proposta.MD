@@ -25,11 +25,11 @@ Indique qual tema específico o grupo escolheu **dentro do eixo temático defini
 
 **Tema:**
 
-> Corrida e mobilidade urbana.
+> Mobilidade inteligente (IA no cotidiano): corrida urbana contra um carro autônomo, com um assistente de rota que usa IA.
 
 **Como esse tema se relaciona com o jogo?** Explique brevemente (2 a 4 linhas) como ele aparecerá nos objetivos, nas regras ou nos desafios, e não apenas nas imagens ou no cenário.
 
-> A corrida acontece em uma cidade, e o jogador precisa escolher bem o caminho: coletar itens de energia limpa (ex.: bateria) dá velocidade extra, enquanto poças de óleo e poluição atrapalham. O inimigo ignora esses itens, então o tema aparece nas regras e nas decisões do jogo, não só no cenário.
+> A corrida acontece em uma cidade, e o jogador precisa escolher bem o caminho: coletar itens de energia limpa (ex.: bateria) dá velocidade extra, enquanto poças de óleo e poluição atrapalham. O inimigo ignora esses itens, então o tema aparece nas regras e nas decisões do jogo, não só no cenário. O inimigo é um carro autônomo guiado por IA, com um sensor que às vezes falha, e o jogador conta com um assistente de rota (IA) que sugere a faixa mais segura, mas também pode errar. Assim o jogo trabalha confiabilidade e análise crítica: a IA ajuda, mas é preciso conferir antes de decidir (uso responsável).
 
 ## 4. Tipo de jogo
 
@@ -37,7 +37,7 @@ Indique o estilo do jogo. Exemplos: desviar de obstáculos, coleta de itens, lab
 
 **Tipo escolhido:**
 
-> Corrida 2D com visão de cima, em formato de duelo contra um oponente controlado pelo computador.
+> Corrida 2D com visão de cima, em formato de duelo contra um oponente controlado pelo computador, com a tela dividida em duas pistas lado a lado (a do jogador e a do carro autônomo).
 
 ## 5. Descrição geral do jogo
 
@@ -45,7 +45,7 @@ Explique, em poucas linhas, como o jogo funcionará. O que aparece na tela? O qu
 
 **Descrição:**
 
-> O jogador e o inimigo correm lado a lado em uma pista com obstáculos e itens. O jogador controla o carro, desvia dos obstáculos e coleta itens de impulso para chegar à linha de chegada antes do inimigo. A partida tem 3 rounds, e a cada round a pista fica um pouco mais difícil (mais obstáculos e inimigo mais rápido).
+> O jogador e o inimigo correm lado a lado, cada um em sua pista, com os mesmos obstáculos e itens. O jogador controla o carro, desvia dos obstáculos e coleta itens de impulso para chegar à linha de chegada antes do inimigo. A partida tem 3 rounds, e a cada round a pista fica um pouco mais difícil (mais obstáculos e inimigo mais rápido).
 
 ## 6. Objetivo do jogador
 
@@ -62,7 +62,7 @@ Liste até cinco regras que expliquem o funcionamento do jogo. Exemplos: o jogad
 - Regra 1: A partida tem 3 rounds, e vence o round quem cruzar a linha de chegada primeiro.
 - Regra 2: Bater em um obstáculo reduz a velocidade do jogador por alguns segundos.
 - Regra 3: Coletar um item de impulso aumenta a velocidade temporariamente.
-- Regra 4: O inimigo corre sozinho, com velocidade que aumenta a cada round.
+- Regra 4: O inimigo é um carro autônomo (IA): corre sozinho, com velocidade que aumenta a cada round, e desvia dos obstáculos com um sensor que às vezes falha.
 - Regra 5: Cada round vencido vale 1 ponto, e o jogador que chegar a 2 pontos vence a partida.
 
 ## 8. Condição de vitória
@@ -87,6 +87,7 @@ Descreva brevemente os elementos mais importantes, sem precisar detalhar a imple
 
 - **Personagem ou elemento principal: carro do jogador.**
 - **Obstáculos ou desafios: cones, poças de óleo e buracos na pista; carro inimigo competindo.**
+- **Assistente de rota (IA): destaca a faixa que sugere para a próxima fileira de obstáculos, mas pode errar.**
 - **Itens ou objetos de interação (se houver): baterias/itens de impulso que dão velocidade extra.**
 - **Pontuação, vidas, tempo ou progresso: placar de rounds (0 a 2), barra de progresso da corrida e cronômetro do round.**
 
@@ -96,7 +97,7 @@ Informe como o jogador vai interagir com o jogo (por exemplo, setas para movimen
 
 **Controles:**
 
-> Setas (ou A/D) para mover o carro para os lados e acelerar/frear; Enter para iniciar o round e reiniciar a partida; Esc para sair.
+> Setas esquerda/direita (ou A/D) para mover o carro para os lados, seta para cima (ou W) para acelerar e seta para baixo (ou S) para frear; Enter para iniciar o round e reiniciar a partida; Esc para sair.
 
 ## 12. Principais dificuldades esperadas
 
@@ -121,3 +122,16 @@ Liste até três funcionalidades extras para implementar somente depois que a ve
 - Melhoria 1: Sons (motor, colisão, vitória) e música de fundo.
 - Melhoria 2: Menu inicial com escolha de dificuldade.
 - Melhoria 3: Pistas diferentes em cada round, com cenários e animações.
+
+## 15. Atualizações feitas na Entrega 2
+
+O planejamento foi mantido (corrida em duelo, 3 rounds, baterias e obstáculos). Mudanças e acréscimos:
+
+- **Conexão mais clara com o tema de IA:** o inimigo passou a ser um carro autônomo com sensor imperfeito (a IA às vezes não detecta uma fileira de obstáculos) e foi incluído um assistente de rota (IA) que sugere a faixa mais segura e pode errar. A confiabilidade do assistente cai a cada round.
+- **Tela dividida:** cada carro tem sua própria pista na tela (jogador à esquerda, carro autônomo à direita), com os mesmos obstáculos. Isso deixa a "visão" da IA visível para o jogador e evita sobreposição de carros.
+- **Controles:** seta para cima/W acelera e seta para baixo/S freia (a proposta original só dizia "acelerar/frear").
+- **Recorde:** o jogo guarda o melhor tempo de um round vencido em `data/recorde.txt`.
+- **Telas:** menu inicial com regras (antes era melhoria opcional), contagem regressiva e tela de resultado com dica de uso responsável de IA.
+
+**Já funciona na Entrega 2:** janela, loop principal, corrida completa em 3 rounds, obstáculos, baterias, IA rival, assistente de rota, placar, cronômetro, vitória/derrota, recorde e testes.
+**Ainda falta:** sons, escolha de dificuldade, pistas diferentes por round e mais ajustes de equilíbrio.
