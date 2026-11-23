@@ -1,143 +1,87 @@
+import random
+
 import pygame
 
 from src.config import (
-    LARGURA_TELA,
     ALTURA_TELA,
-    FPS,
-    TITULO_JOGO,
-    CINZA,
     CAMINHO_RECORDE,
-    CAMINHO_SPRITES,
+    FPS,
+    LARGURA_TELA,
+    TITULO_JOGO,
+    TOTAL_ROUNDS,
 )
+from src.dados import carregar_recorde, salvar_recorde
+from src.desenho import criar_fontes, desenhar_cena
+from src.partida import (
+    FASE_MENU,
+    atualizar_estado,
+    avancar_fase,
+    criar_estado,
+)
+from src.sprites import carregar_sprites
 
-from src.funcoes import (
-    calcular_pontos,
-    jogador_perdeu,
-    limitar_valor,
-    verificar_colisao,
-    tomar_dano,
-)
-from src.sprites import pegar_sprite
-from src.dados import (
-    salvar_recorde,
-    carregar_recorde,
-)
+DT_MAXIMO = 0.05  # evita "saltos" na física se o jogo travar por um instante
+
+
+def ler_comandos(teclas):
+    """Converte as teclas pressionadas em comandos do jogo (aceita setas e WASD)."""
+    return {
+        "esquerda": teclas[pygame.K_LEFT] or teclas[pygame.K_a],
+        "direita": teclas[pygame.K_RIGHT] or teclas[pygame.K_d],
+        "acelerar": teclas[pygame.K_UP] or teclas[pygame.K_w],
+        "frear": teclas[pygame.K_DOWN] or teclas[pygame.K_s],
+    }
+
+
+def montar_titulo_janela(estado):
+    """Texto da barra de título com as informações principais da partida."""
+    if estado["fase"] == FASE_MENU:
+        return TITULO_JOGO
+
+    numero = min(estado["indice_round"] + 1, TOTAL_ROUNDS)
+    vitorias = estado["vitorias"]
+    return f"{TITULO_JOGO} | Round {numero}/{TOTAL_ROUNDS} | Você {vitorias['jogador']} x {vitorias['ia']} IA"
 
 
 def executar_jogo():
-    """Executa o loop principal do jogo e controla estado, colisões e pontuação."""
+    """Executa o loop principal do jogo: eventos, atualização do estado e desenho."""
     pygame.init()
-    
 
     tela = pygame.display.set_mode((LARGURA_TELA, ALTURA_TELA))
     pygame.display.set_caption(TITULO_JOGO)
 
     relogio = pygame.time.Clock()
+    sprites = carregar_sprites()
+    fontes = criar_fontes()
+    rng = random.Random()
+
+    # O recorde é o melhor tempo (em milissegundos) de um round vencido.
+    estado = criar_estado(carregar_recorde(CAMINHO_RECORDE))
     rodando = True
-
-    # 1. Carregando as imagens recortadas do Spritesheet
-
-
-    # Jogador: usando tamanho 110x110 para capturar o quadrado perfeitamente
-    player_image = pegar_sprite(CAMINHO_SPRITES, x=110, y=120, width=190, height=190, scale=0.5)
-
-    # Gema pequena: usando tamanho 64x64
-    gem_image    = pegar_sprite(CAMINHO_SPRITES, x=900, y=690, width=200, height=200, scale=0.5)
-
-    # Morcego: usando tamanho 180x120 por causa das asas abertas
-    bat_image    = pegar_sprite(CAMINHO_SPRITES, x=905, y=1060, width=200, height=130, scale=0.5)
-    
-    # 2. Criando a estrutura de Sprites usando Dicionários
-    jogador = {
-        "imagem": player_image,
-        "rect": player_image.get_rect(topleft=(100, 100))
-    }
-
-    gema = {
-        "imagem": gem_image,
-        "rect": gem_image.get_rect(topleft=(500, 300))
-    }
-    
-    inimigo = {
-        "imagem": bat_image,
-        "rect": bat_image.get_rect(topleft=(200, 500))
-    }
-
-    velocidade = 5
-    pontos = 0
-    vidas = 3
-    recorde = carregar_recorde(CAMINHO_RECORDE)
 
     # Loop principal: processa entrada, atualiza estado e renderiza a cena.
     while rodando:
-        relogio.tick(FPS)
+        dt = min(relogio.tick(FPS) / 1000, DT_MAXIMO)
 
         for evento in pygame.event.get():
             if evento.type == pygame.QUIT:
                 rodando = False
+            elif evento.type == pygame.KEYDOWN:
+                if evento.key == pygame.K_ESCAPE:
+                    rodando = False
+                elif evento.key in (pygame.K_RETURN, pygame.K_KP_ENTER):
+                    avancar_fase(estado, rng)
 
-        teclas = pygame.key.get_pressed()
+        comandos = ler_comandos(pygame.key.get_pressed())
+        atualizar_estado(estado, dt, comandos, rng)
 
-        # Movimentação alterando direto os eixos X e Y do retângulo do jogador
-        if teclas[pygame.K_LEFT]:
-            jogador["rect"].x -= velocidade
-        if teclas[pygame.K_RIGHT]:
-            jogador["rect"].x += velocidade
-        if teclas[pygame.K_UP]:
-            jogador["rect"].y -= velocidade
-        if teclas[pygame.K_DOWN]:
-            jogador["rect"].y += velocidade
+        # Grava o recorde assim que um novo melhor tempo é registrado.
+        if estado["salvar_pendente"]:
+            salvar_recorde(CAMINHO_RECORDE, estado["melhor_tempo"])
+            estado["salvar_pendente"] = False
 
-        # Limitando o jogador dentro das bordas da tela usando as propriedades do Rect
-        jogador["rect"].x = limitar_valor(jogador["rect"].x, 0, LARGURA_TELA - jogador["rect"].width)
-        jogador["rect"].y = limitar_valor(jogador["rect"].y, 0, ALTURA_TELA - jogador["rect"].height)
-
-        # Verificação de colisão com a Gema (antigo 'item')
-        if verificar_colisao(jogador["rect"], gema["rect"]):
-            pontos = calcular_pontos(pontos, 10)
-
-            # Move a gema de lugar ao coletar
-            gema["rect"].x += 80
-            gema["rect"].y += 50
-
-            # Se a gema sair da tela, volta para uma posição segura
-            if gema["rect"].x > LARGURA_TELA - gema["rect"].width:
-                gema["rect"].x = 50
-            if gema["rect"].y > ALTURA_TELA - gema["rect"].height:
-                gema["rect"].y = 50
-
-        # Verificação de colisão com o Inimigo
-        if verificar_colisao(jogador["rect"], inimigo["rect"]):
-            vidas = tomar_dano(vidas, 1)
-
-            # Afasta o inimigo ao colidir
-            inimigo["rect"].x += 80
-            inimigo["rect"].y += 50
-
-            if inimigo["rect"].x > LARGURA_TELA - inimigo["rect"].width:
-                inimigo["rect"].x = 50
-            if inimigo["rect"].y > ALTURA_TELA - inimigo["rect"].height:
-                inimigo["rect"].y = 50
-
-        # Regras de fim de jogo e recorde
-        if jogador_perdeu(vidas):
-            rodando = False
-
-        if pontos > recorde:
-            recorde = pontos
-            salvar_recorde(CAMINHO_RECORDE, recorde)
-
-        pygame.display.set_caption(
-            f"{TITULO_JOGO} | Pontos: {pontos} | Recorde: {recorde} | Vidas: {vidas}"
-        )
-
-        tela.fill(CINZA)
-
-        # Desenhando os elementos na tela passando a imagem e o rect de cada dicionário
-        tela.blit(gema["imagem"], gema["rect"])
-        tela.blit(inimigo["imagem"], inimigo["rect"])
-        tela.blit(jogador["imagem"], jogador["rect"])
-
+        pygame.display.set_caption(montar_titulo_janela(estado))
+        desenhar_cena(tela, estado, sprites, fontes)
         pygame.display.flip()
 
     pygame.quit()
